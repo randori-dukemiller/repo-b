@@ -1,0 +1,43 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - "*"
+
+jobs:
+  build:
+    name: Build release
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}
+    steps:
+      - name: Checkout git repo
+        uses: actions/checkout@v4
+
+      - name: Detect version
+        shell: bash
+        run: echo "VERSION=$(cat ./VERSION)" >> $GITHUB_ENV
+
+      - name: Check if on head branch
+        shell: bash
+        run: |
+          if "${{ github.ref }}" == "refs/heads/main" ]]; then
+              echo "ON_HEAD_BRANCH=true" >> $GITHUB_ENV
+          else
+              echo "ON_HEAD_BRANCH=false" >> $GITHUB_ENV
+          fi
+
+      - name: Check if tagged
+        shell: bash
+        run: git show-ref --tags --verify --quiet -- "refs/tags/${{ env.VERSION }}" && echo "TAGGED=true" >> $GITHUB_ENV || echo "TAGGED=false" >> $GITHUB_ENV
+
+      - name: Release
+        if: ${{ env.ON_HEAD_BRANCH == 'true' && env.TAGGED == 'false' }}
+        uses: softprops/action-gh-release@v1
+        with:
+          generate_release_notes: true
+          tag_name: ${{ env.VERSION }}
+          target_commitish: ${{ github.sha }}
+          name: ${{ env.VERSION }}
