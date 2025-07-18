@@ -23,7 +23,7 @@ jobs:
       - name: Check if on head branch
         shell: bash
         run: |
-          if "${{ github.ref }}" == "refs/heads/main" ]]; then
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
               echo "ON_HEAD_BRANCH=true" >> $GITHUB_ENV
           else
               echo "ON_HEAD_BRANCH=false" >> $GITHUB_ENV
